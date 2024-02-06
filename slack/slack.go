@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sukeesh/k8s-job-notify/env"
+	"github.com/achilles-git/k8s-job-notify/env"
 )
 
 type requestBody struct {
