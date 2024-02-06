@@ -6,16 +6,18 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"os"
 
 	"github.com/achilles-git/k8s-job-notify/env"
 )
 
 type requestBody struct {
 	Text string `json:"text"`
+	Channel string `json:"channel,omitempty"`
 }
 
 func SendSlackMessage(message string) error {
-	slackBody, _ := json.Marshal(requestBody{Text: message})
+	slackBody, _ := json.Marshal(requestBody{Text: message,Channel: os.Getenv("channel")})
 	slackWebHookURL, err := env.GetSlackWebHookURL()
 	if err != nil {
 		return err
