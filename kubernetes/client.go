@@ -4,6 +4,9 @@ import (
 	"flag"
 	"log"
 	"os/user"
+	"os"
+	"strings"
+	"fmt"
 
 	"github.com/achilles-git/k8s-job-notify/env"
 
@@ -34,6 +37,22 @@ func NewClient() (*Client, error) {
 	return &Client{
 		clientset: clientSet,
 	}, nil
+}
+
+// Function to create GKE console URL
+func CreateUrl() string {
+	usr, err := user.Current()
+	if err != nil {
+		return "user not found"
+		os.Exit(1)
+	}
+	filePath := usr.HomeDir + "/.kube/config"
+	context := clientcmd.GetConfigFromFileOrDie(filePath).CurrentContext
+	res := strings.Split(context,"_")
+	fmt.Println(res)
+	url := "https://console.cloud.google.com/kubernetes/job/"+res[2]+"/"+res[3]+"/default/"
+	fmt.Println(url)
+	return url
 }
 
 func getConfig() (config *rest.Config, err error) {

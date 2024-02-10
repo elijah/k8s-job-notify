@@ -37,6 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	consoleUrl := CreateUrl()
 	namespace := env.GetNamespace()
 	log.Printf("fetching jobs from %s namespace", namespace)
 	level := env.GetNotificationLevel()
@@ -52,6 +53,8 @@ func main() {
 			// job.Name can be same for different jobs, so using job.Name+CreationTimeStamp for checking
 			// uniqueness of the job. so that duplicated messages to slack can be avoided
 			jobUniqueHash := job.Name + job.CreationTimestamp.String()
+			jobUrl := consoleUrl + job.Name
+			fmt.Println(jobUrl)
 			if pastJobs[jobUniqueHash] == false {
 				if level == "all" {
 					// Send success notifications.
