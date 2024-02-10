@@ -37,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	consoleUrl := CreateUrl()
+	consoleUrl := k8s.CreateUrl()
 	namespace := env.GetNamespace()
 	log.Printf("fetching jobs from %s namespace", namespace)
 	level := env.GetNotificationLevel()
@@ -60,7 +60,7 @@ func main() {
 					// Send success notifications.
 					if job.Status.Succeeded > 0 &&  (job.Status.CompletionTime.Add(20*time.Minute).Unix() > time.Now().Unix()) {
 						timeSinceCompletion := time.Now().Sub(job.Status.CompletionTime.Time).Minutes()
-						err = slack.SendSlackMessage(message.JobSuccess(clusterName, job.Name, timeSinceCompletion))
+						err = slack.SendSlackMessage(message.JobSuccess(clusterName, job.Name, timeSinceCompletion),jobUrl)
 						if err != nil {
 							log.Fatalf("sending a message to slack failed %v", zap.Error(err))
 						}
@@ -72,7 +72,7 @@ func main() {
 					// Send failed notifications.
 				  if job.Status.Failed > 0 {
 						if job.Status.StartTime.Add(5*time.Hour).Unix() > time.Now().Unix() {
-							err = slack.SendSlackMessage(message.JobFailure(clusterName, job.Name))
+							err = slack.SendSlackMessage(message.JobFailure(clusterName, job.Name),jobUrl)
 							if err != nil {
 								log.Fatalf("sending a message to slack failed %v", zap.Error(err))
 							}

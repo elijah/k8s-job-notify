@@ -1,14 +1,10 @@
 package slack
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"net/http"
-	"time"
 	"os"
-
+	"fmt"
 	"github.com/achilles-git/k8s-job-notify/env"
+	"github.com/ashwanthkumar/slack-go-webhook"
 )
 
 type requestBody struct {
@@ -16,29 +12,27 @@ type requestBody struct {
 	Channel string `json:"channel,omitempty"`
 }
 
-func SendSlackMessage(message string) error {
-	slackBody, _ := json.Marshal(requestBody{Text: message,Channel: os.Getenv("channel")})
+func SendSlackMessage(message string, jobUrl string) error {
+	//slackBody, _ := json.Marshal(requestBody{Text: message,Channel: os.Getenv("channel")})
 	slackWebHookURL, err := env.GetSlackWebHookURL()
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPost, slackWebHookURL, bytes.NewBuffer(slackBody))
-	if err != nil {
-		return err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(resp.Body)
-	if err != nil {
-		return err
-	}
-	if buf.String() != "ok" {
-		return errors.New("non ok response from Slack")
-	}
+	attachment1 := slack.Attachment {}
+	attachment1.AddField(slack.Field { Title: "Status", Value: "Failed" })
+	attachment1.AddAction(slack.Action { Type: "button", Text: "View logs", Url: jobUrl, Style: "primary" })
+	payload := slack.Payload {
+      Text: message,
+      Username: "robot",
+      Channel: os.Getenv("channel"),
+      IconEmoji: ":monkey_face:",
+      Attachments: []slack.Attachment{attachment1},
+    }
+    errr := slack.Send(slackWebHookURL, "", payload)
+    if len(errr) > 0 {
+      fmt.Printf("error: %s\n", errr)
+    }
+
+
 	return nil
 }
